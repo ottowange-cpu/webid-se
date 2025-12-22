@@ -1,4 +1,4 @@
-import { Brain, Shield, Eye, Zap, Lock, AlertTriangle } from "lucide-react";
+import { Brain, Shield, Zap, Lock, AlertTriangle } from "lucide-react";
 
 const features = [
   {
@@ -10,11 +10,6 @@ const features = [
     icon: Shield,
     title: "Automatisk Blockering",
     description: "Farliga webbplatser blockeras automatiskt innan du ens hinner se dem, vilket ger dig sömlöst skydd.",
-  },
-  {
-    icon: Eye,
-    title: "Realtidsövervakning",
-    description: "Kontinuerlig övervakning av din surfaktivitet för att upptäcka och stoppa hot direkt.",
   },
   {
     icon: Zap,
