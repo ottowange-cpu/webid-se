@@ -29,11 +29,19 @@ export const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <Button variant="hero" size="xl">
+              <Button 
+                variant="hero" 
+                size="xl"
+                onClick={() => document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 <ShieldCheck className="w-5 h-5" />
                 Aktivera Skydd
               </Button>
-              <Button variant="outline" size="xl">
+              <Button 
+                variant="outline" 
+                size="xl"
+                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 Läs Mer
               </Button>
             </div>
