@@ -23,11 +23,19 @@ export const CTA = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="xl">
+            <Button 
+              variant="hero" 
+              size="xl"
+              onClick={() => document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               <ShieldCheck className="w-5 h-5" />
               Aktivera Gratis Skydd
             </Button>
-            <Button variant="outline" size="xl">
+            <Button 
+              variant="outline" 
+              size="xl"
+              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               Kontakta Oss
               <ArrowRight className="w-5 h-5" />
             </Button>
