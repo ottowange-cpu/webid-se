@@ -59,8 +59,8 @@ export const Pricing = () => {
 
             <div className="text-center md:text-right">
               <div className="mb-4">
-                <span className="text-muted-foreground line-through text-lg">599 kr</span>
-                <div className="text-5xl font-bold text-foreground">299 kr</div>
+                <span className="text-muted-foreground line-through text-lg">99 kr</span>
+                <div className="text-5xl font-bold text-foreground">29 kr</div>
                 <span className="text-muted-foreground">engångsbetalning</span>
               </div>
               
