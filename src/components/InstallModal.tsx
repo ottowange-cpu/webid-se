@@ -166,91 +166,76 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
 
                   {platform.id === "mac" && (
                     <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        Två sätt att blockera farliga sidor på Mac:
-                      </p>
-
-                      {/* Hosts-fil metod */}
-                      <div className="p-4 rounded-lg bg-secondary/30 border border-border/50 space-y-3">
+                      {/* Quick install - like Chrome */}
+                      <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 space-y-3">
                         <div className="flex items-center gap-2">
-                          <Terminal className="w-5 h-5 text-primary" />
-                          <h5 className="font-semibold text-foreground">Metod 1: Hosts-fil (Rekommenderat)</h5>
+                          <Download className="w-5 h-5 text-primary" />
+                          <h5 className="font-semibold text-foreground">Snabbinstallation</h5>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Blockerar domäner på systemnivå i alla webbläsare.
+                        <p className="text-sm text-muted-foreground">
+                          Ladda ner och kör vårt installationsskript för att blockera farliga sidor på systemnivå.
                         </p>
-                        <ol className="space-y-2 text-sm text-muted-foreground">
-                          <li className="flex items-start gap-2">
-                            <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center flex-shrink-0">1</span>
-                            <span>Öppna Terminal (Cmd + Space, skriv "Terminal")</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center flex-shrink-0">2</span>
-                            <span>Kör kommandot nedan för att ladda ner blocklistan</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center flex-shrink-0">3</span>
-                            <span>Starta om datorn eller kör: <code className="bg-background/50 px-1 rounded">sudo dscacheutil -flushcache</code></span>
-                          </li>
-                        </ol>
-                        
-                        <div className="p-3 rounded-lg bg-background/50 border border-border/30">
-                          <p className="text-xs text-muted-foreground mb-2">Kör detta kommando i Terminal:</p>
-                          <code className="text-xs text-primary font-mono break-all block">
-                            curl -s "{hostsApiUrl}" | sudo tee -a /etc/hosts
-                          </code>
-                        </div>
                         
                         <Button 
-                          variant="outline" 
-                          size="sm"
+                          variant="premium" 
+                          size="default"
                           className="w-full"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigator.clipboard.writeText(`curl -s "${hostsApiUrl}" | sudo tee -a /etc/hosts`);
+                            // Create download link
+                            const link = document.createElement('a');
+                            link.href = '/install-webguard.sh';
+                            link.download = 'install-webguard.sh';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
                             toast({
-                              title: "Kopierat!",
-                              description: "Klistra in kommandot i Terminal",
+                              title: "Nedladdat!",
+                              description: "Följ stegen nedan för att installera",
                             });
                           }}
                         >
-                          <Copy className="w-4 h-4 mr-2" />
-                          Kopiera kommando
-                        </Button>
-                      </div>
-
-                      {/* Safari Content Blocker info */}
-                      <div className="p-4 rounded-lg bg-secondary/30 border border-border/50 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Apple className="w-5 h-5 text-primary" />
-                          <h5 className="font-semibold text-foreground">Metod 2: Safari Content Blocker</h5>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          För utvecklare som vill bygga en Safari App Extension.
-                        </p>
-                        <div className="p-3 rounded-lg bg-background/50 border border-border/30">
-                          <p className="text-xs text-muted-foreground mb-1">API-endpoint för Safari JSON:</p>
-                          <code className="text-xs text-primary font-mono break-all">
-                            {hostsApiUrl.replace('hosts', 'safari')}
-                          </code>
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.open("https://developer.apple.com/documentation/safariservices/creating_a_content_blocker", "_blank");
-                          }}
-                        >
                           <Download className="w-4 h-4 mr-2" />
-                          Apple Developer Dokumentation
+                          Ladda ner för Mac
                         </Button>
+
+                        <div className="pt-3 border-t border-border/30 space-y-2">
+                          <p className="text-xs font-medium text-foreground">Efter nedladdning:</p>
+                          <ol className="space-y-1.5 text-xs text-muted-foreground">
+                            <li className="flex items-start gap-2">
+                              <span className="w-4 h-4 rounded-full bg-primary/20 text-primary text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                              <span>Öppna Terminal (Cmd + Space, skriv "Terminal")</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="w-4 h-4 rounded-full bg-primary/20 text-primary text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                              <span>Gå till din Downloads-mapp: <code className="bg-background/50 px-1 rounded">cd ~/Downloads</code></span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="w-4 h-4 rounded-full bg-primary/20 text-primary text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                              <span>Kör: <code className="bg-background/50 px-1 rounded">sudo bash install-webguard.sh</code></span>
+                            </li>
+                          </ol>
+                        </div>
                       </div>
 
-                      {/* Länkkontroll */}
+                      {/* Commands reference */}
+                      <div className="p-3 rounded-lg bg-secondary/30 border border-border/50 space-y-2">
+                        <p className="text-xs font-medium text-foreground">Användbara kommandon:</p>
+                        <div className="grid gap-2 text-xs">
+                          <div className="flex items-center justify-between p-2 rounded bg-background/50">
+                            <span className="text-muted-foreground">Uppdatera blocklista</span>
+                            <code className="text-primary font-mono">sudo bash install-webguard.sh --update</code>
+                          </div>
+                          <div className="flex items-center justify-between p-2 rounded bg-background/50">
+                            <span className="text-muted-foreground">Avinstallera</span>
+                            <code className="text-primary font-mono">sudo bash install-webguard.sh --uninstall</code>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Link checker */}
                       <Button 
-                        variant="premium" 
+                        variant="outline" 
                         size="default"
                         className="w-full justify-start h-auto py-3"
                         onClick={(e) => {
