@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Shield, Chrome, Smartphone, Apple, Download, Copy, Check, Globe, Link as LinkIcon, Monitor, Terminal, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { downloadChromeExtension } from "@/utils/extensionDownloader";
+import { downloadAllExtensionFiles } from "@/utils/extensionDownloader";
 
 interface InstallModalProps {
   open: boolean;
@@ -135,12 +135,12 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                           variant="premium" 
                           size="sm"
                           className="w-full"
-                          onClick={async (e) => {
+                          onClick={(e) => {
                             e.stopPropagation();
-                            await downloadChromeExtension();
+                            downloadAllExtensionFiles();
                             toast({
-                              title: "Nedladdat!",
-                              description: "Packa upp ZIP-filen och följ stegen ovan",
+                              title: "Laddar ner filer...",
+                              description: "Spara alla filer i samma mapp",
                             });
                           }}
                         >
