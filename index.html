@@ -1,71 +1,16 @@
 <!DOCTYPE html>
 <html lang="sv">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>SafeGuard AI</title>
-  <meta name="theme-color" content="#0f172a" />
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #020617);
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .card {
-      max-width: 420px;
-      padding: 2rem;
-      background: rgba(255,255,255,0.05);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-
-    h1 {
-      margin-bottom: 0.5rem;
-      font-size: 2rem;
-    }
-
-    p {
-      opacity: 0.85;
-      margin-bottom: 1.5rem;
-    }
-
-    button {
-      background: #38bdf8;
-      color: #020617;
-      border: none;
-      padding: 0.8rem 1.2rem;
-      border-radius: 10px;
-      font-size: 1rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    button:hover {
-      background: #0ea5e9;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="card">
-    <h1>🛡️ SafeGuard AI</h1>
-    <p>Skyddar dig från bedrägliga webbplatser – direkt i mobilen.</p>
-    <button onclick="alert('Funktionen kommer snart!')">
-      Aktivera skydd
-    </button>
-  </div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Guard AI - Skydda dig mot bedrägerier</title>
+    <meta name="description" content="Web Guard AI skyddar dig automatiskt mot bedrägerier, phishing och farliga webbplatser med avancerad AI-teknik." />
+    <meta name="theme-color" content="#0a0a0f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="manifest" href="/manifest.json" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
