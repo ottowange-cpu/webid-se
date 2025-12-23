@@ -2,3 +2,9 @@ project_id = "zotvdjgxsrzswmaalujv"
 
 [functions.analyze-url]
 verify_jwt = false
+
+[functions.content-blocker]
+verify_jwt = false
+
+[functions.add-blocked-domain]
+verify_jwt = false

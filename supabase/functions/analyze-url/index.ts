@@ -1,9 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Extract domain from URL
+function extractDomain(url: string): string {
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+    return urlObj.hostname.replace(/^www\./, '');
+  } catch {
+    return url.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,7 +36,35 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Analyzing URL:', url);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const domain = extractDomain(url);
+    console.log('Analyzing URL:', url, 'Domain:', domain);
+
+    // Check if domain is already in blocklist
+    const { data: existingBlock } = await supabase
+      .from('blocked_domains')
+      .select('*')
+      .eq('domain', domain)
+      .maybeSingle();
+
+    if (existingBlock) {
+      console.log('Domain already blocked:', domain);
+      return new Response(
+        JSON.stringify({
+          safe: false,
+          riskLevel: existingBlock.risk_level || 'high',
+          category: existingBlock.category || 'Blockerad',
+          reasons: [existingBlock.reason || 'Denna domän är blockerad'],
+          recommendation: 'Undvik denna webbplats - den har tidigare identifierats som osäker.',
+          shouldBlock: true,
+          cached: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -148,6 +187,28 @@ Svara ENDAST med ett JSON-objekt i följande format:
         reasons: ['Kunde inte analysera URL:en fullständigt'],
         recommendation: 'Var försiktig med denna webbplats'
       };
+    }
+
+    // If the URL is unsafe, add it to the blocklist
+    if (!analysis.safe && (analysis.riskLevel === 'high' || analysis.shouldBlock)) {
+      console.log('Adding unsafe domain to blocklist:', domain);
+      
+      const { error: insertError } = await supabase
+        .from('blocked_domains')
+        .upsert({
+          domain: domain,
+          reason: analysis.reasons?.join('. ') || 'Identifierad som osäker',
+          category: analysis.category || 'unknown',
+          risk_level: analysis.riskLevel || 'high'
+        }, {
+          onConflict: 'domain'
+        });
+
+      if (insertError) {
+        console.error('Error adding to blocklist:', insertError);
+      } else {
+        console.log('Successfully added to blocklist:', domain);
+      }
     }
 
     return new Response(
