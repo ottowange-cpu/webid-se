@@ -2,12 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Shield, Zap, Globe, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { InstallModal } from "./InstallModal";
-
 export const Hero = () => {
   const [installModalOpen, setInstallModalOpen] = useState(false);
-
-  return (
-    <>
+  return <>
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-24 pt-32">
         {/* Background effects */}
         <div className="absolute inset-0 pointer-events-none bg-gradient-mesh" />
@@ -20,42 +17,40 @@ export const Hero = () => {
           <div className="flex flex-col lg:flex-row items-center gap-16">
             {/* Left content */}
             <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass border border-primary/20 mb-8 animate-fade-in">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm text-foreground/90 font-medium">Nästa generations AI-skydd</span>
-              </div>
+              
 
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] mb-8 animate-fade-in" style={{
+              animationDelay: "0.1s"
+            }}>
                 Skydda dig mot{" "}
                 <span className="text-gradient">bedrägerier</span>{" "}
                 på nätet
               </h1>
 
-              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-xl font-light leading-relaxed animate-fade-in" style={{ animationDelay: "0.2s" }}>
+              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-xl font-light leading-relaxed animate-fade-in" style={{
+              animationDelay: "0.2s"
+            }}>
                 Vår AI blockerar automatiskt scam-sidor och skyddar dig från bedrägliga webbplatser i realtid.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: "0.3s" }}>
-                <Button 
-                  variant="premium" 
-                  size="xl"
-                  onClick={() => setInstallModalOpen(true)}
-                >
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in" style={{
+              animationDelay: "0.3s"
+            }}>
+                <Button variant="premium" size="xl" onClick={() => setInstallModalOpen(true)}>
                   <Shield className="w-5 h-5" />
                   Aktivera Skydd
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="xl"
-                  className="border-border/50 hover:border-primary/50 hover:bg-primary/5"
-                  onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                >
+                <Button variant="outline" size="xl" className="border-border/50 hover:border-primary/50 hover:bg-primary/5" onClick={() => document.getElementById('how-it-works')?.scrollIntoView({
+                behavior: 'smooth'
+              })}>
                   Läs Mer
                 </Button>
               </div>
 
               {/* Trust indicators */}
-              <div className="flex items-center gap-10 mt-14 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: "0.4s" }}>
+              <div className="flex items-center gap-10 mt-14 justify-center lg:justify-start animate-fade-in" style={{
+              animationDelay: "0.4s"
+            }}>
                 <div className="text-center">
                   <p className="text-3xl font-bold text-gradient">50K+</p>
                   <p className="text-sm text-muted-foreground mt-1">Användare</p>
@@ -74,7 +69,9 @@ export const Hero = () => {
             </div>
 
             {/* Right visual */}
-            <div className="flex-1 relative animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <div className="flex-1 relative animate-fade-in" style={{
+            animationDelay: "0.3s"
+          }}>
               <div className="relative w-full max-w-lg mx-auto">
                 {/* Glowing shield */}
                 <div className="relative z-10 flex items-center justify-center">
@@ -89,14 +86,18 @@ export const Hero = () => {
                 </div>
 
                 {/* Floating elements */}
-                <div className="absolute top-8 right-0 glass rounded-xl px-5 py-3 shadow-card animate-float" style={{ animationDelay: "0.5s" }}>
+                <div className="absolute top-8 right-0 glass rounded-xl px-5 py-3 shadow-card animate-float" style={{
+                animationDelay: "0.5s"
+              }}>
                   <div className="flex items-center gap-3">
                     <div className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
                     <span className="text-sm font-medium text-foreground">Skyddad</span>
                   </div>
                 </div>
 
-                <div className="absolute bottom-12 -left-4 glass rounded-xl px-5 py-3 shadow-card animate-float border-destructive/20" style={{ animationDelay: "1s" }}>
+                <div className="absolute bottom-12 -left-4 glass rounded-xl px-5 py-3 shadow-card animate-float border-destructive/20" style={{
+                animationDelay: "1s"
+              }}>
                   <div className="flex items-center gap-3">
                     <Globe className="w-4 h-4 text-destructive" />
                     <span className="text-sm text-muted-foreground font-mono">scam-site.xyz</span>
@@ -104,7 +105,9 @@ export const Hero = () => {
                   </div>
                 </div>
 
-                <div className="absolute top-1/2 -left-8 glass rounded-xl px-4 py-2 shadow-card animate-float" style={{ animationDelay: "1.5s" }}>
+                <div className="absolute top-1/2 -left-8 glass rounded-xl px-4 py-2 shadow-card animate-float" style={{
+                animationDelay: "1.5s"
+              }}>
                   <div className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-warning" />
                     <span className="text-xs text-muted-foreground">AI Scanning...</span>
@@ -117,6 +120,5 @@ export const Hero = () => {
       </section>
 
       <InstallModal open={installModalOpen} onOpenChange={setInstallModalOpen} />
-    </>
-  );
+    </>;
 };
