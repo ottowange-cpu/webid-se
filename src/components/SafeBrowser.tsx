@@ -1,397 +1,299 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
   Shield, 
-  ShieldX, 
-  ShieldCheck, 
-  Search, 
-  ArrowLeft, 
-  ArrowRight, 
-  RotateCw, 
-  Home,
-  X,
-  Loader2,
-  AlertTriangle,
+  Settings, 
+  CheckCircle2, 
+  ChevronRight,
+  Smartphone,
+  Globe,
   Lock,
-  Unlock,
-  ExternalLink
+  ExternalLink,
+  Copy,
+  Check
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface AnalysisResult {
-  safe: boolean;
-  riskLevel: "low" | "medium" | "high";
-  category: string;
-  reasons: string[];
-  recommendation: string;
-  shouldBlock?: boolean;
+interface SetupStep {
+  id: number;
+  title: string;
+  description: string;
+  instruction: string;
+  completed: boolean;
 }
 
 export const SafeBrowser = () => {
-  const [url, setUrl] = useState("");
-  const [currentUrl, setCurrentUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [isBlocked, setIsBlocked] = useState(false);
-  const [history, setHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
+  const [copiedDNS, setCopiedDNS] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  // Safe domains that don't need analysis
-  const SAFE_DOMAINS = [
-    'google.com', 'google.se', 'youtube.com', 'facebook.com', 'instagram.com',
-    'twitter.com', 'x.com', 'linkedin.com', 'github.com', 'microsoft.com',
-    'apple.com', 'amazon.com', 'amazon.se', 'wikipedia.org', 'reddit.com',
-    'netflix.com', 'spotify.com', 'bankid.com', 'swish.nu', 'klarna.com'
+  // DNS server for content blocking (placeholder - would need actual DNS service)
+  const DNS_SERVER = "webid.safedns.se";
+
+  const iosSteps: SetupStep[] = [
+    {
+      id: 1,
+      title: "Öppna Inställningar",
+      description: "Gå till din iPhones inställningar",
+      instruction: "Tryck på Inställningar-appen på din hemskärm",
+      completed: completedSteps.includes(1)
+    },
+    {
+      id: 2,
+      title: "Safari-inställningar",
+      description: "Navigera till Safari",
+      instruction: "Scrolla ner och tryck på Safari",
+      completed: completedSteps.includes(2)
+    },
+    {
+      id: 3,
+      title: "Tillägg",
+      description: "Aktivera innehållsblockerare",
+      instruction: "Tryck på Tillägg → Innehållsblockerare och aktivera WebID",
+      completed: completedSteps.includes(3)
+    }
   ];
 
-  const isSafeDomain = (urlString: string): boolean => {
-    try {
-      const hostname = new URL(urlString).hostname.toLowerCase();
-      return SAFE_DOMAINS.some(safe => 
-        hostname === safe || hostname.endsWith('.' + safe)
-      );
-    } catch {
-      return false;
+  const androidSteps: SetupStep[] = [
+    {
+      id: 1,
+      title: "Öppna Inställningar",
+      description: "Gå till telefonens inställningar",
+      instruction: "Tryck på Inställningar-appen",
+      completed: completedSteps.includes(1)
+    },
+    {
+      id: 2,
+      title: "Nätverk & Internet",
+      description: "Hitta nätverksinställningar",
+      instruction: "Tryck på Nätverk & Internet eller Anslutningar",
+      completed: completedSteps.includes(2)
+    },
+    {
+      id: 3,
+      title: "Privat DNS",
+      description: "Konfigurera säker DNS",
+      instruction: `Tryck på Privat DNS → Ange: ${DNS_SERVER}`,
+      completed: completedSteps.includes(3)
     }
+  ];
+
+  const [selectedPlatform, setSelectedPlatform] = useState<"ios" | "android" | null>(null);
+
+  const toggleStep = (stepId: number) => {
+    setCompletedSteps(prev => 
+      prev.includes(stepId) 
+        ? prev.filter(id => id !== stepId)
+        : [...prev, stepId]
+    );
   };
 
-  const normalizeUrl = (inputUrl: string): string => {
-    let normalized = inputUrl.trim();
-    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
-      normalized = 'https://' + normalized;
-    }
-    return normalized;
+  const copyDNS = () => {
+    navigator.clipboard.writeText(DNS_SERVER);
+    setCopiedDNS(true);
+    toast({
+      title: "Kopierad!",
+      description: "DNS-adressen har kopierats till urklipp",
+    });
+    setTimeout(() => setCopiedDNS(false), 2000);
   };
 
-  const analyzeUrl = async (urlToAnalyze: string): Promise<AnalysisResult | null> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-url', {
-        body: { url: urlToAnalyze }
-      });
-
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      
-      return data;
-    } catch (error) {
-      console.error('Analysis error:', error);
-      return null;
-    }
-  };
-
-  const navigateTo = async (inputUrl: string) => {
-    if (!inputUrl.trim()) return;
-
-    const normalizedUrl = normalizeUrl(inputUrl);
-    setUrl(normalizedUrl);
-    setIsBlocked(false);
-    setAnalysisResult(null);
-
-    // Check if it's a safe domain
-    if (isSafeDomain(normalizedUrl)) {
-      setCurrentUrl(normalizedUrl);
-      setAnalysisResult({ safe: true, riskLevel: "low", category: "Verifierad", reasons: [], recommendation: "Känd säker webbplats" });
-      
-      // Add to history
-      const newHistory = [...history.slice(0, historyIndex + 1), normalizedUrl];
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
-      return;
-    }
-
-    // Analyze URL before loading
-    setIsAnalyzing(true);
-    const result = await analyzeUrl(normalizedUrl);
-    setIsAnalyzing(false);
-
-    if (result) {
-      setAnalysisResult(result);
-
-      if (result.shouldBlock || (!result.safe && result.riskLevel === "high")) {
-        // Block the page
-        setIsBlocked(true);
-        toast({
-          title: "⛔ Sidan blockerad",
-          description: `${result.category}: ${result.recommendation}`,
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    // Safe to load
-    setCurrentUrl(normalizedUrl);
-    
-    // Add to history
-    const newHistory = [...history.slice(0, historyIndex + 1), normalizedUrl];
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
-
-  const goBack = () => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setCurrentUrl(history[newIndex]);
-      setUrl(history[newIndex]);
-      setIsBlocked(false);
-    }
-  };
-
-  const goForward = () => {
-    if (historyIndex < history.length - 1) {
-      const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      setCurrentUrl(history[newIndex]);
-      setUrl(history[newIndex]);
-    }
-  };
-
-  const refresh = () => {
-    if (currentUrl && iframeRef.current) {
-      iframeRef.current.src = currentUrl;
-    }
-  };
-
-  const goHome = () => {
-    setUrl("");
-    setCurrentUrl("");
-    setIsBlocked(false);
-    setAnalysisResult(null);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      navigateTo(url);
-    }
-  };
-
-  const proceedAnyway = () => {
-    if (url) {
-      setIsBlocked(false);
-      setCurrentUrl(url);
-      
-      const newHistory = [...history.slice(0, historyIndex + 1), url];
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
-    }
-  };
+  const steps = selectedPlatform === "ios" ? iosSteps : androidSteps;
+  const allCompleted = steps.every(step => completedSteps.includes(step.id));
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Browser toolbar */}
-      <div className="glass-strong border-b border-border/50 p-2 safe-area-top">
-        <div className="flex items-center gap-2">
-          {/* Navigation buttons */}
-          <div className="flex items-center gap-1">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9"
-              onClick={goBack}
-              disabled={historyIndex <= 0}
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9"
-              onClick={goForward}
-              disabled={historyIndex >= history.length - 1}
-            >
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9"
-              onClick={refresh}
-              disabled={!currentUrl}
-            >
-              <RotateCw className="w-4 h-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9"
-              onClick={goHome}
-            >
-              <Home className="w-4 h-4" />
-            </Button>
+    <div className="min-h-screen bg-background safe-area-top safe-area-bottom">
+      {/* Header */}
+      <div className="glass-strong border-b border-border/50 p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
+            <Shield className="w-5 h-5 text-primary-foreground" />
           </div>
-
-          {/* URL bar */}
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50">
-            {/* Security indicator */}
-            {isAnalyzing ? (
-              <Loader2 className="w-4 h-4 text-primary animate-spin" />
-            ) : analysisResult ? (
-              analysisResult.safe ? (
-                <Lock className="w-4 h-4 text-success" />
-              ) : (
-                <Unlock className="w-4 h-4 text-destructive" />
-              )
-            ) : (
-              <Search className="w-4 h-4 text-muted-foreground" />
-            )}
-            
-            <Input
-              type="url"
-              placeholder="Sök eller skriv webbadress..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1 bg-transparent border-none focus-visible:ring-0 p-0 h-auto text-sm"
-            />
-            
-            {url && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6"
-                onClick={() => setUrl("")}
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            )}
+          <div>
+            <h1 className="font-bold text-foreground">Aktivera Skydd</h1>
+            <p className="text-xs text-muted-foreground">Koppla WebID till din webbläsare</p>
           </div>
-
-          {/* Go button */}
-          <Button 
-            variant="premium" 
-            size="sm"
-            onClick={() => navigateTo(url)}
-            disabled={isAnalyzing || !url.trim()}
-          >
-            {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Gå"}
-          </Button>
         </div>
-
-        {/* Security status bar */}
-        {analysisResult && !isBlocked && (
-          <div className={`mt-2 px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${
-            analysisResult.safe 
-              ? "bg-success/10 text-success border border-success/20" 
-              : "bg-warning/10 text-warning border border-warning/20"
-          }`}>
-            {analysisResult.safe ? (
-              <ShieldCheck className="w-3.5 h-3.5" />
-            ) : (
-              <AlertTriangle className="w-3.5 h-3.5" />
-            )}
-            <span className="font-medium">{analysisResult.category}</span>
-            <span className="opacity-70">•</span>
-            <span className="opacity-70">{analysisResult.recommendation}</span>
-          </div>
-        )}
       </div>
 
-      {/* Browser content */}
-      <div className="flex-1 relative">
-        {/* Welcome screen */}
-        {!currentUrl && !isBlocked && (
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <div className="text-center max-w-md">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-                <Shield className="w-10 h-10 text-primary-foreground" />
+      <div className="p-4 space-y-6">
+        {/* Platform selection */}
+        {!selectedPlatform ? (
+          <div className="space-y-4">
+            <div className="text-center py-8">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                <Lock className="w-10 h-10 text-primary-foreground" />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-3">Säker Webbläsare</h2>
-              <p className="text-muted-foreground mb-6">
-                Alla webbplatser analyseras av AI innan de laddas. Farliga sidor blockeras automatiskt.
+              <h2 className="text-xl font-bold text-foreground mb-2">Välj din enhet</h2>
+              <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                För att blockera farliga webbplatser automatiskt behöver du koppla WebID till din webbläsare.
               </p>
-              <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigateTo("https://google.com")}
-                >
-                  Google
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigateTo("https://youtube.com")}
-                >
-                  YouTube
-                </Button>
-              </div>
             </div>
-          </div>
-        )}
 
-        {/* Blocked page */}
-        {isBlocked && analysisResult && (
-          <div className="absolute inset-0 flex items-center justify-center p-6 bg-gradient-to-b from-destructive/5 to-background">
-            <div className="text-center max-w-md">
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-destructive/10 border-2 border-destructive/30 flex items-center justify-center animate-pulse">
-                <ShieldX className="w-12 h-12 text-destructive" />
-              </div>
-              <h2 className="text-2xl font-bold text-destructive mb-2">Sidan Blockerad</h2>
-              <p className="text-muted-foreground mb-4">
-                Denna webbplats har identifierats som potentiellt farlig.
-              </p>
-              
-              <div className="glass rounded-xl p-4 mb-6 text-left">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-destructive/20 text-destructive">
-                    {analysisResult.category}
-                  </span>
+            <div className="space-y-3">
+              <button
+                onClick={() => setSelectedPlatform("ios")}
+                className="w-full glass rounded-xl p-4 flex items-center gap-4 hover:bg-secondary/50 transition-colors text-left"
+              >
+                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                  <Smartphone className="w-6 h-6 text-foreground" />
                 </div>
-                <p className="text-sm text-foreground font-medium mb-2">{analysisResult.recommendation}</p>
-                {analysisResult.reasons && analysisResult.reasons.length > 0 && (
-                  <ul className="space-y-1">
-                    {analysisResult.reasons.slice(0, 3).map((reason, index) => (
-                      <li key={index} className="text-xs text-muted-foreground flex items-start gap-2">
-                        <AlertTriangle className="w-3 h-3 mt-0.5 text-warning flex-shrink-0" />
-                        {reason}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground">iPhone / iPad</h3>
+                  <p className="text-sm text-muted-foreground">Safari innehållsblockerare</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
 
-              <div className="flex flex-col gap-2">
-                <Button variant="premium" onClick={goHome}>
-                  <Home className="w-4 h-4" />
-                  Gå till startsidan
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={proceedAnyway}
-                >
-                  Fortsätt ändå (ej rekommenderat)
-                </Button>
+              <button
+                onClick={() => setSelectedPlatform("android")}
+                className="w-full glass rounded-xl p-4 flex items-center gap-4 hover:bg-secondary/50 transition-colors text-left"
+              >
+                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-foreground" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground">Android</h3>
+                  <p className="text-sm text-muted-foreground">Privat DNS-konfiguration</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="glass rounded-xl p-4 bg-primary/5 border border-primary/20">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-foreground text-sm">Hur fungerar det?</h4>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    WebID analyserar alla webbplatser du besöker i realtid och blockerar automatiskt farliga sidor innan de laddas.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        )}
+        ) : (
+          <div className="space-y-4">
+            {/* Back button */}
+            <button
+              onClick={() => {
+                setSelectedPlatform(null);
+                setCompletedSteps([]);
+              }}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+              <span className="text-sm">Tillbaka</span>
+            </button>
 
-        {/* Iframe for loaded pages */}
-        {currentUrl && !isBlocked && (
-          <iframe
-            ref={iframeRef}
-            src={currentUrl}
-            className="w-full h-full border-none"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-            onLoad={() => setIsLoading(false)}
-            onLoadStart={() => setIsLoading(true)}
-          />
-        )}
+            {/* Platform header */}
+            <div className="text-center py-4">
+              <h2 className="text-xl font-bold text-foreground mb-1">
+                {selectedPlatform === "ios" ? "iPhone / iPad" : "Android"} Setup
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Följ stegen nedan för att aktivera skyddet
+              </p>
+            </div>
 
-        {/* Loading overlay */}
-        {isLoading && currentUrl && (
-          <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Laddar...</p>
+            {/* DNS copy for Android */}
+            {selectedPlatform === "android" && (
+              <div className="glass rounded-xl p-4 bg-secondary/50">
+                <p className="text-xs text-muted-foreground mb-2">DNS-adress att kopiera:</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-background rounded-lg px-3 py-2 text-sm font-mono text-foreground">
+                    {DNS_SERVER}
+                  </code>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={copyDNS}
+                    className="shrink-0"
+                  >
+                    {copiedDNS ? (
+                      <Check className="w-4 h-4 text-success" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Steps */}
+            <div className="space-y-3">
+              {steps.map((step, index) => (
+                <button
+                  key={step.id}
+                  onClick={() => toggleStep(step.id)}
+                  className={`w-full glass rounded-xl p-4 text-left transition-all ${
+                    completedSteps.includes(step.id) 
+                      ? "bg-success/10 border border-success/30" 
+                      : "hover:bg-secondary/50"
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                      completedSteps.includes(step.id)
+                        ? "bg-success text-success-foreground"
+                        : "bg-secondary text-muted-foreground"
+                    }`}>
+                      {completedSteps.includes(step.id) ? (
+                        <CheckCircle2 className="w-5 h-5" />
+                      ) : (
+                        <span className="font-semibold">{index + 1}</span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className={`font-semibold ${
+                        completedSteps.includes(step.id) ? "text-success" : "text-foreground"
+                      }`}>
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">{step.description}</p>
+                      <p className="text-xs text-muted-foreground mt-2 bg-secondary/50 rounded-lg px-3 py-2">
+                        {step.instruction}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Completion state */}
+            {allCompleted && (
+              <div className="glass rounded-xl p-6 bg-success/10 border border-success/30 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/20 flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8 text-success" />
+                </div>
+                <h3 className="font-bold text-success text-lg mb-2">Skyddet är aktiverat!</h3>
+                <p className="text-sm text-muted-foreground">
+                  WebID blockerar nu automatiskt farliga webbplatser när du surfar.
+                </p>
+              </div>
+            )}
+
+            {/* iOS specific: Open settings button */}
+            {selectedPlatform === "ios" && (
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  // On iOS, this would open settings
+                  window.location.href = "App-Prefs:";
+                }}
+              >
+                <Settings className="w-4 h-4" />
+                Öppna Inställningar
+                <ExternalLink className="w-3 h-3 ml-auto" />
+              </Button>
+            )}
+
+            {/* Help text */}
+            <div className="glass rounded-xl p-4">
+              <p className="text-xs text-muted-foreground text-center">
+                Behöver du hjälp? Kontakta vår support på support@webid.se
+              </p>
             </div>
           </div>
         )}
