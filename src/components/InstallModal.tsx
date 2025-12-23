@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Shield, Chrome, Smartphone, Apple, Download, Copy, CheckCircle2, Check } from "lucide-react";
+import { Shield, Chrome, Smartphone, Apple, Download, Copy, Check, Globe, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface InstallModalProps {
   open: boolean;
@@ -13,6 +14,7 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const extensionsUrl = "chrome://extensions";
 
@@ -31,7 +33,7 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
       id: "chrome",
       name: "Chrome / Edge / Brave",
       icon: Chrome,
-      description: "Tillägg för Chromium-baserade webbläsare",
+      description: "Tillägg med automatisk blockering",
       available: true,
       instructions: [
         "Klicka på 'Ladda ner från GitHub' nedan",
@@ -41,7 +43,7 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
         "Aktivera 'Utvecklarläge' uppe till höger",
         "Klicka 'Läs in okomprimerat tillägg'",
         "Välj mappen 'chrome-extension' från den uppackade filen",
-        "Klart! Tillägget skyddar dig nu automatiskt"
+        "Klart! Tillägget blockerar farliga sidor automatiskt"
       ]
     },
     {
@@ -57,15 +59,9 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
       id: "mobile",
       name: "Mobil (iOS / Android)",
       icon: Smartphone,
-      description: "Manuell URL-scanning direkt i webbläsaren",
+      description: "Säker webbläsare + länkkontroll",
       available: true,
-      instructions: [
-        "Lägg till denna sida på din hemskärm för snabb åtkomst",
-        "När du får en misstänkt länk, kopiera den",
-        "Öppna Web Guard AI från hemskärmen",
-        "Klistra in länken i demo-sektionen nedan",
-        "Klicka 'Analysera' för att se om sidan är säker"
-      ]
+      instructions: []
     }
   ];
 
@@ -80,7 +76,7 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
             Aktivera Web Guard AI
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Välj din webbläsare för att aktivera automatiskt skydd mot bedrägerier.
+            Välj din plattform för att aktivera skydd mot bedrägerier.
           </DialogDescription>
         </DialogHeader>
 
@@ -117,77 +113,107 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
 
               {selectedPlatform === platform.id && platform.available && (
                 <div className="mt-4 pt-4 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
-                  <h4 className="font-medium text-foreground mb-3">Installationssteg:</h4>
-                  <ol className="space-y-2">
-                    {platform.instructions.map((step, index) => (
-                      <li key={index} className="flex items-start gap-3 text-sm text-muted-foreground">
-                        <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                          {index + 1}
-                        </span>
-                        <span>{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-
+                  
                   {platform.id === "chrome" && (
-                    <div className="mt-5 space-y-3">
-                      <Button 
-                        variant="premium" 
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open("https://github.com/nicholasprogdev/webid-scam-blocker-se", "_blank");
-                        }}
-                      >
-                        <Download className="w-4 h-4" />
-                        Ladda ner från GitHub
-                      </Button>
+                    <>
+                      <h4 className="font-medium text-foreground mb-3">Installationssteg:</h4>
+                      <ol className="space-y-2 mb-4">
+                        {platform.instructions.map((step, index) => (
+                          <li key={index} className="flex items-start gap-3 text-sm text-muted-foreground">
+                            <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {index + 1}
+                            </span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ol>
                       
-                      <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border/50">
-                        <code className="flex-1 text-sm text-primary font-mono">chrome://extensions</code>
+                      <div className="space-y-3">
                         <Button 
-                          variant="ghost" 
+                          variant="premium" 
                           size="sm"
+                          className="w-full"
                           onClick={(e) => {
                             e.stopPropagation();
-                            copyExtensionsUrl();
+                            window.open("https://github.com/nicholasprogdev/webid-scam-blocker-se", "_blank");
                           }}
-                          className="shrink-0"
                         >
-                          {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                          <Download className="w-4 h-4" />
+                          Ladda ner från GitHub
                         </Button>
+                        
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border/50">
+                          <code className="flex-1 text-sm text-primary font-mono">chrome://extensions</code>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyExtensionsUrl();
+                            }}
+                            className="shrink-0"
+                          >
+                            {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Kopiera och klistra in i adressfältet
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Kopiera länken ovan och klistra in i adressfältet (av säkerhetsskäl kan webbplatser inte öppna chrome://-länkar direkt)
-                      </p>
-                    </div>
+                    </>
                   )}
 
                   {platform.id === "mobile" && (
-                    <div className="mt-5 space-y-3">
-                      <Button 
-                        variant="premium" 
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenChange(false);
-                          setTimeout(() => {
-                            document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
-                          }, 100);
-                        }}
-                      >
-                        <Shield className="w-4 h-4" />
-                        Gå till URL-scanner
-                      </Button>
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Välj hur du vill använda Web Guard AI på mobilen:
+                      </p>
+
+                      <div className="grid gap-3">
+                        <Button 
+                          variant="premium" 
+                          size="default"
+                          className="w-full justify-start h-auto py-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenChange(false);
+                            navigate("/browser");
+                          }}
+                        >
+                          <Globe className="w-5 h-5 mr-3" />
+                          <div className="text-left">
+                            <div className="font-semibold">Säker Webbläsare</div>
+                            <div className="text-xs opacity-80">Surfa med automatisk blockering</div>
+                          </div>
+                        </Button>
+
+                        <Button 
+                          variant="outline" 
+                          size="default"
+                          className="w-full justify-start h-auto py-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenChange(false);
+                            navigate("/check");
+                          }}
+                        >
+                          <LinkIcon className="w-5 h-5 mr-3" />
+                          <div className="text-left">
+                            <div className="font-semibold">Länkkontroll</div>
+                            <div className="text-xs opacity-80">Dela eller klistra in misstänkta länkar</div>
+                          </div>
+                        </Button>
+                      </div>
                       
                       <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                         <p className="text-xs text-muted-foreground">
-                          <strong className="text-foreground">Tips för iOS:</strong> Tryck på dela-ikonen → "Lägg till på hemskärmen"
+                          <strong className="text-foreground">Tips:</strong> Lägg till appen på hemskärmen för snabb åtkomst.
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          <strong className="text-foreground">Tips för Android:</strong> Tryck på menyn (⋮) → "Lägg till på startskärmen"
+                          iOS: Dela → "Lägg till på hemskärmen"
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Android: Meny (⋮) → "Lägg till på startskärmen"
                         </p>
                       </div>
                     </div>
@@ -200,7 +226,7 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
 
         <div className="pt-4 border-t border-border/50">
           <p className="text-xs text-muted-foreground text-center">
-            Web Guard AI skyddar dig mot phishing, bedrägerier och farliga webbplatser i realtid.
+            Web Guard AI skyddar dig mot phishing, bedrägerier och farliga webbplatser.
           </p>
         </div>
       </DialogContent>
