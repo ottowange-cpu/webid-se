@@ -163,8 +163,41 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                           </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Kopiera och klistra in i adressfältet
+                          Kopiera och klistra in i adressfältet för att installera
                         </p>
+                      </div>
+
+                      {/* Uninstall Chrome extension */}
+                      <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 space-y-3 mt-4">
+                        <div className="flex items-center gap-2">
+                          <ShieldOff className="w-5 h-5 text-destructive" />
+                          <h5 className="font-semibold text-foreground">Avaktivera skydd</h5>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Ta bort tillägget för att inaktivera skyddet.
+                        </p>
+                        <ol className="space-y-1.5 text-xs text-muted-foreground">
+                          <li className="flex items-start gap-2">
+                            <span className="w-4 h-4 rounded-full bg-destructive/20 text-destructive text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                            <span>Gå till chrome://extensions</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="w-4 h-4 rounded-full bg-destructive/20 text-destructive text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                            <span>Hitta "Web Guard AI" och klicka på "Ta bort"</span>
+                          </li>
+                        </ol>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyExtensionsUrl();
+                          }}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          Kopiera chrome://extensions
+                        </Button>
                       </div>
                     </>
                   )}
