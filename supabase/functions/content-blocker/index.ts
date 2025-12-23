@@ -71,13 +71,23 @@ serve(async (req) => {
         },
       });
     } else if (format === 'hosts') {
-      // Hosts file format (for DNS blocking)
-      const hostsContent = domains?.map(d => `0.0.0.0 ${d.domain}`).join('\n') || '';
+      // Hosts file format (for DNS blocking on Mac/Linux)
+      const header = `# Web Guard AI Blocklist
+# Generated: ${new Date().toISOString()}
+# Total domains: ${domains?.length || 0}
+# https://webguard.ai
+#
+# Add this to /etc/hosts on Mac/Linux
+# Run: sudo dscacheutil -flushcache (Mac) or systemctl restart systemd-resolved (Linux)
+#
+`;
+      const hostsContent = header + (domains?.map(d => `0.0.0.0 ${d.domain}\n0.0.0.0 www.${d.domain}`).join('\n') || '');
       
       return new Response(hostsContent, {
         headers: { 
           ...corsHeaders, 
-          'Content-Type': 'text/plain' 
+          'Content-Type': 'text/plain',
+          'Cache-Control': 'public, max-age=3600'
         },
       });
     } else {
