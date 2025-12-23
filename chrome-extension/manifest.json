@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "WebID Scam Blocker",
+  "name": "Web Guard AI",
   "version": "1.0.0",
-  "description": "AI-driven protection against scam and phishing websites",
+  "description": "Skyddar dig mot bedrägerier, phishing och farliga webbplatser med AI",
   "permissions": [
-    "activeTab",
     "storage",
-    "webNavigation"
+    "webNavigation",
+    "tabs"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -17,19 +17,19 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
+      "16": "icons/icon128.png",
+      "48": "icons/icon128.png",
       "128": "icons/icon128.png"
     }
   },
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
+    "16": "icons/icon128.png",
+    "48": "icons/icon128.png",
     "128": "icons/icon128.png"
   },
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html", "styles.css"],
+      "resources": ["blocked.html"],
       "matches": ["<all_urls>"]
     }
   ]
