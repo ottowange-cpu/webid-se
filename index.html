@@ -1,26 +1,71 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="Lovable App" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+  <title>SafeGuard AI</title>
+  <meta name="theme-color" content="#0f172a" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #020617);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .card {
+      max-width: 420px;
+      padding: 2rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+    }
+
+    p {
+      opacity: 0.85;
+      margin-bottom: 1.5rem;
+    }
+
+    button {
+      background: #38bdf8;
+      color: #020617;
+      border: none;
+      padding: 0.8rem 1.2rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #0ea5e9;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>🛡️ SafeGuard AI</h1>
+    <p>Skyddar dig från bedrägliga webbplatser – direkt i mobilen.</p>
+    <button onclick="alert('Funktionen kommer snart!')">
+      Aktivera skydd
+    </button>
+  </div>
+</body>
 </html>
