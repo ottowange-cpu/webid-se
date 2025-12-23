@@ -32,7 +32,10 @@ const SAFE_DOMAINS = [
   'aftonbladet.se',
   'expressen.se',
   'dn.se',
-  'svd.se'
+  'svd.se',
+  'lovableproject.com',
+  'lovable.dev',
+  'supabase.co'
 ];
 
 // Check if protection is enabled
@@ -76,8 +79,11 @@ async function analyzeUrl(url) {
   // Check cache first
   const cached = getCachedResult(url);
   if (cached) {
+    console.log('Cache hit for:', url);
     return cached;
   }
+
+  console.log('Analyzing URL:', url);
 
   try {
     const response = await fetch(API_URL, {
@@ -90,15 +96,16 @@ async function analyzeUrl(url) {
 
     if (!response.ok) {
       console.error('API error:', response.status);
-      return { safe: true, risk_level: 'unknown' };
+      return { safe: true, riskLevel: 'unknown', shouldBlock: false };
     }
 
     const result = await response.json();
+    console.log('Analysis result:', result);
     cacheResult(url, result);
     return result;
   } catch (error) {
     console.error('Failed to analyze URL:', error);
-    return { safe: true, risk_level: 'unknown' };
+    return { safe: true, riskLevel: 'unknown', shouldBlock: false };
   }
 }
 
@@ -120,17 +127,21 @@ async function updateBadge(tabId, status) {
     disabled: 'OFF'
   };
 
-  await chrome.action.setBadgeBackgroundColor({ 
-    color: colors[status] || colors.safe,
-    tabId 
-  });
-  await chrome.action.setBadgeText({ 
-    text: text[status] || '',
-    tabId 
-  });
+  try {
+    await chrome.action.setBadgeBackgroundColor({ 
+      color: colors[status] || colors.safe,
+      tabId 
+    });
+    await chrome.action.setBadgeText({ 
+      text: text[status] || '',
+      tabId 
+    });
+  } catch (error) {
+    console.error('Failed to update badge:', error);
+  }
 }
 
-// Handle navigation
+// Handle navigation - this is where blocking happens
 chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   // Only handle main frame navigation
   if (details.frameId !== 0) return;
@@ -148,6 +159,11 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
     return;
   }
 
+  // Skip our own blocked page
+  if (url.includes(chrome.runtime.id)) {
+    return;
+  }
+
   // Skip safe domains
   if (isSafeDomain(url)) {
     await updateBadge(details.tabId, 'safe');
@@ -160,25 +176,39 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   // Analyze the URL
   const result = await analyzeUrl(url);
 
-  if (!result.safe && result.risk_level === 'high') {
+  // Check if we should block based on AI analysis
+  const shouldBlock = result.shouldBlock === true || 
+                      (!result.safe && result.riskLevel === 'high');
+
+  if (shouldBlock) {
     // Block dangerous sites
+    console.log('BLOCKING:', url, 'Reason:', result.category);
     await updateBadge(details.tabId, 'danger');
     
-    // Store the blocked URL info
+    // Store the blocked URL info for display
     await chrome.storage.local.set({
       lastBlocked: {
         url,
-        reason: result.reason,
-        category: result.category,
+        reasons: result.reasons || [],
+        category: result.category || 'Farlig',
+        recommendation: result.recommendation || 'Undvik denna webbplats',
         timestamp: Date.now()
       }
+    });
+
+    // Update blocked count
+    const storage = await chrome.storage.local.get(['blockedCount']);
+    await chrome.storage.local.set({ 
+      blockedCount: (storage.blockedCount || 0) + 1 
     });
 
     // Redirect to blocked page
     chrome.tabs.update(details.tabId, {
       url: chrome.runtime.getURL('blocked.html') + '?url=' + encodeURIComponent(url)
     });
-  } else if (!result.safe && result.risk_level === 'medium') {
+  } else if (!result.safe && result.riskLevel === 'medium') {
+    // Warning for medium risk
+    console.log('WARNING:', url, 'Reason:', result.category);
     await updateBadge(details.tabId, 'warning');
   } else {
     await updateBadge(details.tabId, 'safe');
@@ -208,9 +238,12 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
 
   const cached = getCachedResult(url);
   if (cached) {
-    if (!cached.safe && cached.risk_level === 'high') {
+    const shouldBlock = cached.shouldBlock === true || 
+                        (!cached.safe && cached.riskLevel === 'high');
+    
+    if (shouldBlock) {
       await updateBadge(details.tabId, 'danger');
-    } else if (!cached.safe && cached.risk_level === 'medium') {
+    } else if (!cached.safe && cached.riskLevel === 'medium') {
       await updateBadge(details.tabId, 'warning');
     } else {
       await updateBadge(details.tabId, 'safe');
@@ -221,8 +254,15 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'getStatus') {
-    isProtectionEnabled().then(enabled => {
-      sendResponse({ enabled });
+    Promise.all([
+      isProtectionEnabled(),
+      chrome.storage.local.get(['blockedCount', 'lastBlocked'])
+    ]).then(([enabled, storage]) => {
+      sendResponse({ 
+        enabled,
+        blockedCount: storage.blockedCount || 0,
+        lastBlocked: storage.lastBlocked
+      });
     });
     return true;
   }
@@ -244,6 +284,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Initialize on install
 chrome.runtime.onInstalled.addListener(() => {
+  console.log('Web Guard AI installed');
   chrome.storage.local.set({ 
     protectionEnabled: true,
     blockedCount: 0
