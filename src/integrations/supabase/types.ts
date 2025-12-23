@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      blocked_domains: {
+        Row: {
+          blocked_count: number | null
+          category: string | null
+          created_at: string
+          domain: string
+          id: string
+          reason: string | null
+          risk_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          blocked_count?: number | null
+          category?: string | null
+          created_at?: string
+          domain: string
+          id?: string
+          reason?: string | null
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blocked_count?: number | null
+          category?: string | null
+          created_at?: string
+          domain?: string
+          id?: string
+          reason?: string | null
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
