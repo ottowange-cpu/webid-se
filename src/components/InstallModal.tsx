@@ -5,78 +5,61 @@ import { Shield, Chrome, Smartphone, Apple, Download, Copy, Check, Globe, Link a
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { downloadAllExtensionFiles } from "@/utils/extensionDownloader";
-
 interface InstallModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
+export const InstallModal = ({
+  open,
+  onOpenChange
+}: InstallModalProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
-
   const extensionsUrl = "chrome://extensions";
-
   const copyExtensionsUrl = () => {
     navigator.clipboard.writeText(extensionsUrl);
     setCopied(true);
     toast({
       title: "Kopierat!",
-      description: "Klistra in chrome://extensions i din webbläsares adressfält",
+      description: "Klistra in chrome://extensions i din webbläsares adressfält"
     });
     setTimeout(() => setCopied(false), 2000);
   };
-
   const hostsApiUrl = "https://zotvdjgxsrzswmaalujv.supabase.co/functions/v1/content-blocker?format=hosts";
-
   const copyHostsUrl = () => {
     navigator.clipboard.writeText(hostsApiUrl);
     toast({
       title: "Kopierat!",
-      description: "API-URL för hosts-fil kopierad",
+      description: "API-URL för hosts-fil kopierad"
     });
   };
-
-  const platforms = [
-    {
-      id: "chrome",
-      name: "Chrome / Edge / Brave",
-      icon: Chrome,
-      description: "Tillägg med automatisk blockering",
-      available: true,
-      instructions: [
-        "Klicka på 'Ladda ner från GitHub' nedan",
-        "Klicka på den gröna 'Code'-knappen → 'Download ZIP'",
-        "Packa upp ZIP-filen på din dator",
-        "Kopiera länken nedan och klistra in i adressfältet",
-        "Aktivera 'Utvecklarläge' uppe till höger",
-        "Klicka 'Läs in okomprimerat tillägg'",
-        "Välj mappen 'chrome-extension' från den uppackade filen",
-        "Klart! Tillägget blockerar farliga sidor automatiskt"
-      ]
-    },
-    {
-      id: "mac",
-      name: "Mac (Safari / System)",
-      icon: Monitor,
-      description: "Hosts-fil eller Safari Content Blocker",
-      available: true,
-      instructions: []
-    },
-    {
-      id: "mobile",
-      name: "Mobil (iOS / Android)",
-      icon: Smartphone,
-      description: "Säker webbläsare + länkkontroll",
-      available: true,
-      instructions: []
-    }
-  ];
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  const platforms = [{
+    id: "chrome",
+    name: "Chrome / Edge / Brave",
+    icon: Chrome,
+    description: "Tillägg med automatisk blockering",
+    available: true,
+    instructions: ["Klicka på 'Ladda ner från GitHub' nedan", "Klicka på den gröna 'Code'-knappen → 'Download ZIP'", "Packa upp ZIP-filen på din dator", "Kopiera länken nedan och klistra in i adressfältet", "Aktivera 'Utvecklarläge' uppe till höger", "Klicka 'Läs in okomprimerat tillägg'", "Välj mappen 'chrome-extension' från den uppackade filen", "Klart! Tillägget blockerar farliga sidor automatiskt"]
+  }, {
+    id: "mac",
+    name: "Mac (Safari / System)",
+    icon: Monitor,
+    description: "Hosts-fil eller Safari Content Blocker",
+    available: true,
+    instructions: []
+  }, {
+    id: "mobile",
+    name: "Mobil (iOS / Android)",
+    icon: Smartphone,
+    description: "Säker webbläsare + länkkontroll",
+    available: true,
+    instructions: []
+  }];
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl glass-strong border-border/50 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl">
@@ -91,17 +74,9 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {platforms.map((platform) => (
-            <button
-              key={platform.id}
-              onClick={() => setSelectedPlatform(selectedPlatform === platform.id ? null : platform.id)}
-              className={`w-full p-4 rounded-xl border transition-all text-left ${
-                selectedPlatform === platform.id
-                  ? "border-primary/50 bg-primary/5"
-                  : "border-border/50 hover:border-primary/30 hover:bg-secondary/50"
-              }`}
-            >
-              <div className="flex items-center gap-4">
+          {platforms.map(platform => <button key={platform.id} onClick={() => setSelectedPlatform(selectedPlatform === platform.id ? null : platform.id)} className={`w-full p-4 rounded-xl border transition-all text-left ${selectedPlatform === platform.id ? "border-primary/50 bg-primary/5" : "border-border/50 hover:border-primary/30 hover:bg-secondary/50"}`}>Mobil (iOS / Android)
+
+Säker webbläsare + länkkontroll<div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-primary">
                   <platform.icon className="w-6 h-6 text-primary-foreground" />
                 </div>
@@ -113,52 +88,31 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                 </div>
               </div>
 
-              {selectedPlatform === platform.id && platform.available && (
-                <div className="mt-4 pt-4 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+              {selectedPlatform === platform.id && platform.available && <div className="mt-4 pt-4 border-t border-border/50" onClick={e => e.stopPropagation()}>
                   
-                  {platform.id === "chrome" && (
-                    <>
-                      <h4 className="font-medium text-foreground mb-3">Installationssteg:</h4>
-                      <ol className="space-y-2 mb-4">
-                        {platform.instructions.map((step, index) => (
-                          <li key={index} className="flex items-start gap-3 text-sm text-muted-foreground">
-                            <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                              {index + 1}
-                            </span>
-                            <span>{step}</span>
-                          </li>
-                        ))}
-                      </ol>
+                  {platform.id === "chrome" && <>
+                      <h4 className="font-medium text-foreground mb-3">Installationssteg: 1. Ladda ner filen. 2. Kopiera länken. 3. Klistra in länken i en ny flik och klicka Enter på tangentbordet. 4. Klicka på läs in opaketerat tillägg uppe i det vänstra hörnet på hemsidan. 5. Lägg in den nedladdade filen.                                                                            </h4>
+                      
                       
                       <div className="space-y-3">
-                        <Button 
-                          variant="premium" 
-                          size="sm"
-                          className="w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadAllExtensionFiles();
-                            toast({
-                              title: "Laddar ner filer...",
-                              description: "Spara alla filer i samma mapp",
-                            });
-                          }}
-                        >
+                        <Button variant="premium" size="sm" className="w-full" onClick={e => {
+                  e.stopPropagation();
+                  downloadAllExtensionFiles();
+                  toast({
+                    title: "Laddar ner filer...",
+                    description: "Spara alla filer i samma mapp"
+                  });
+                }}>
                           <Download className="w-4 h-4" />
                           Ladda ner Chrome-tillägg
                         </Button>
                         
                         <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border/50">
                           <code className="flex-1 text-sm text-primary font-mono">chrome://extensions</code>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyExtensionsUrl();
-                            }}
-                            className="shrink-0"
-                          >
+                          <Button variant="ghost" size="sm" onClick={e => {
+                    e.stopPropagation();
+                    copyExtensionsUrl();
+                  }} className="shrink-0">
                             {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                           </Button>
                         </div>
@@ -186,24 +140,17 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                             <span>Hitta "Web Guard AI" och klicka på "Ta bort"</span>
                           </li>
                         </ol>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyExtensionsUrl();
-                          }}
-                        >
+                        <Button variant="outline" size="sm" className="w-full border-destructive/30 text-destructive hover:bg-destructive/10" onClick={e => {
+                  e.stopPropagation();
+                  copyExtensionsUrl();
+                }}>
                           <Copy className="w-4 h-4 mr-2" />
                           Kopiera chrome://extensions
                         </Button>
                       </div>
-                    </>
-                  )}
+                    </>}
 
-                  {platform.id === "mac" && (
-                    <div className="space-y-4">
+                  {platform.id === "mac" && <div className="space-y-4">
                       {/* Quick install - like Chrome */}
                       <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 space-y-3">
                         <div className="flex items-center gap-2">
@@ -214,25 +161,20 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                           Ladda ner och kör vårt installationsskript för att blockera farliga sidor på systemnivå.
                         </p>
                         
-                        <Button 
-                          variant="premium" 
-                          size="default"
-                          className="w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Create download link
-                            const link = document.createElement('a');
-                            link.href = '/install-webguard.sh';
-                            link.download = 'install-webguard.sh';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            toast({
-                              title: "Nedladdat!",
-                              description: "Följ stegen nedan för att installera",
-                            });
-                          }}
-                        >
+                        <Button variant="premium" size="default" className="w-full" onClick={e => {
+                  e.stopPropagation();
+                  // Create download link
+                  const link = document.createElement('a');
+                  link.href = '/install-webguard.sh';
+                  link.download = 'install-webguard.sh';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  toast({
+                    title: "Nedladdat!",
+                    description: "Följ stegen nedan för att installera"
+                  });
+                }}>
                           <Download className="w-4 h-4 mr-2" />
                           Ladda ner för Mac
                         </Button>
@@ -265,61 +207,44 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                         <p className="text-xs text-muted-foreground">
                           Ta bort blocklistan och inaktivera skyddet.
                         </p>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText('cd ~/Downloads && sudo bash install-webguard.sh --uninstall');
-                            toast({
-                              title: "Kommando kopierat!",
-                              description: "Klistra in i Terminal för att avinstallera",
-                            });
-                          }}
-                        >
+                        <Button variant="outline" size="sm" className="w-full border-destructive/30 text-destructive hover:bg-destructive/10" onClick={e => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText('cd ~/Downloads && sudo bash install-webguard.sh --uninstall');
+                  toast({
+                    title: "Kommando kopierat!",
+                    description: "Klistra in i Terminal för att avinstallera"
+                  });
+                }}>
                           <Copy className="w-4 h-4 mr-2" />
                           Kopiera avinstallera-kommando
                         </Button>
                       </div>
 
                       {/* Link checker */}
-                      <Button 
-                        variant="outline" 
-                        size="default"
-                        className="w-full justify-start h-auto py-3"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenChange(false);
-                          navigate("/check");
-                        }}
-                      >
+                      <Button variant="outline" size="default" className="w-full justify-start h-auto py-3" onClick={e => {
+                e.stopPropagation();
+                onOpenChange(false);
+                navigate("/check");
+              }}>
                         <LinkIcon className="w-5 h-5 mr-3" />
                         <div className="text-left">
                           <div className="font-semibold">Använd Länkkontroll</div>
                           <div className="text-xs opacity-80">Kontrollera misstänkta länkar manuellt</div>
                         </div>
                       </Button>
-                    </div>
-                  )}
+                    </div>}
 
-                  {platform.id === "mobile" && (
-                    <div className="space-y-4">
+                  {platform.id === "mobile" && <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
                         Välj hur du vill använda Web Guard AI på mobilen:
                       </p>
 
                       <div className="grid gap-3">
-                        <Button 
-                          variant="premium" 
-                          size="default"
-                          className="w-full justify-start h-auto py-3"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenChange(false);
-                            navigate("/browser");
-                          }}
-                        >
+                        <Button variant="premium" size="default" className="w-full justify-start h-auto py-3" onClick={e => {
+                  e.stopPropagation();
+                  onOpenChange(false);
+                  navigate("/browser");
+                }}>
                           <Globe className="w-5 h-5 mr-3" />
                           <div className="text-left">
                             <div className="font-semibold">Säker Webbläsare</div>
@@ -327,16 +252,11 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                           </div>
                         </Button>
 
-                        <Button 
-                          variant="outline" 
-                          size="default"
-                          className="w-full justify-start h-auto py-3"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenChange(false);
-                            navigate("/check");
-                          }}
-                        >
+                        <Button variant="outline" size="default" className="w-full justify-start h-auto py-3" onClick={e => {
+                  e.stopPropagation();
+                  onOpenChange(false);
+                  navigate("/check");
+                }}>
                           <LinkIcon className="w-5 h-5 mr-3" />
                           <div className="text-left">
                             <div className="font-semibold">Länkkontroll</div>
@@ -356,12 +276,9 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                           Android: Meny (⋮) → "Lägg till på startskärmen"
                         </p>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </button>
-          ))}
+                    </div>}
+                </div>}
+            </button>)}
         </div>
 
         <div className="pt-4 border-t border-border/50">
@@ -370,6 +287,5 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
           </p>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
