@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Shield, Chrome, Smartphone, Apple, Download, Copy, Check, Globe, Link as LinkIcon, Monitor, Terminal } from "lucide-react";
+import { Shield, Chrome, Smartphone, Apple, Download, Copy, Check, Globe, Link as LinkIcon, Monitor, Terminal, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { downloadChromeExtension } from "@/utils/extensionDownloader";
@@ -223,19 +223,31 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                         </div>
                       </div>
 
-                      {/* Commands reference */}
-                      <div className="p-3 rounded-lg bg-secondary/30 border border-border/50 space-y-2">
-                        <p className="text-xs font-medium text-foreground">Användbara kommandon:</p>
-                        <div className="grid gap-2 text-xs">
-                          <div className="flex items-center justify-between p-2 rounded bg-background/50">
-                            <span className="text-muted-foreground">Uppdatera blocklista</span>
-                            <code className="text-primary font-mono">sudo bash install-webguard.sh --update</code>
-                          </div>
-                          <div className="flex items-center justify-between p-2 rounded bg-background/50">
-                            <span className="text-muted-foreground">Avinstallera</span>
-                            <code className="text-primary font-mono">sudo bash install-webguard.sh --uninstall</code>
-                          </div>
+                      {/* Uninstall button */}
+                      <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <ShieldOff className="w-5 h-5 text-destructive" />
+                          <h5 className="font-semibold text-foreground">Avaktivera skydd</h5>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          Ta bort blocklistan och inaktivera skyddet.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText('cd ~/Downloads && sudo bash install-webguard.sh --uninstall');
+                            toast({
+                              title: "Kommando kopierat!",
+                              description: "Klistra in i Terminal för att avinstallera",
+                            });
+                          }}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          Kopiera avinstallera-kommando
+                        </Button>
                       </div>
 
                       {/* Link checker */}
