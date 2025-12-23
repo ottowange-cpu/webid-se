@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Shield, Chrome, Smartphone, Apple, Download, Copy, Check, Globe, Link as LinkIcon, Monitor, Terminal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { downloadChromeExtension } from "@/utils/extensionDownloader";
 
 interface InstallModalProps {
   open: boolean;
@@ -134,13 +135,17 @@ export const InstallModal = ({ open, onOpenChange }: InstallModalProps) => {
                           variant="premium" 
                           size="sm"
                           className="w-full"
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            window.open("https://github.com/nicholasprogdev/webid-scam-blocker-se", "_blank");
+                            await downloadChromeExtension();
+                            toast({
+                              title: "Nedladdat!",
+                              description: "Packa upp ZIP-filen och följ stegen ovan",
+                            });
                           }}
                         >
                           <Download className="w-4 h-4" />
-                          Ladda ner från GitHub
+                          Ladda ner Chrome-tillägg
                         </Button>
                         
                         <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border/50">
